@@ -19,8 +19,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 
 void ScreenPosToWorldRay(
-	int mouseX, int mouseY,             // Mouse position, in pixels, from bottom-left corner of the window
-	int screenWidth, int screenHeight,  // Window size, in pixels
+	GLFWwindow* window,
 	glm::mat4 ViewMatrix,               // Camera position and orientation
 	glm::mat4 ProjectionMatrix,         // Camera parameters (ratio, field of view, near and far planes)
 	glm::mat4 ModelMatrix,
@@ -117,7 +116,9 @@ int main()
 			int width, height;
 			glfwGetWindowSize(window, &width, &height);
 
-			ScreenPosToWorldRay(mouseX, mouseY, width, height, view, projection, model, origin, direction);
+			//std::cout << width << "  " << height << std::endl;
+
+			ScreenPosToWorldRay(window, view, projection, model, origin, direction);
 			direction *= 1000.0f;
 
 			glm::vec2 barPos;
@@ -147,24 +148,34 @@ int main()
 }
 
 void ScreenPosToWorldRay(
-	int mouseX, int mouseY,             
-	int screenWidth, int screenHeight,  
+	GLFWwindow* window,
 	glm::mat4 ViewMatrix,              
 	glm::mat4 ProjectionMatrix,
 	glm::mat4 ModelMatrix,
 	glm::vec3& out_origin,             
 	glm::vec3& out_direction	         
 ) {
+	double mouseX, mouseY;
+	glfwGetCursorPos(window, &mouseX, &mouseY);
+
+	int width, height;
+	glfwGetWindowSize(window, &width, &height);
+
 	mouseX += 0.5;
-	mouseY = screenHeight - 0.5 - mouseY;
+	mouseY = height - 0.5 - mouseY;
+
+	int viewPortDimensions[4];
+	glGetIntegerv(GL_VIEWPORT, viewPortDimensions);
 
 	glm::vec4 lRayStart_NDC(
-		((float)mouseX / (float)screenWidth - 0.5f) * 2.0f, 
-		((float)mouseY / (float)screenHeight - 0.5f) * 2.0f, 
-		-1.0, 
+		(((float)mouseX - (float)viewPortDimensions[0]) / (float)viewPortDimensions[2] - 0.5f) * 2.0f,
+		(((float)mouseY - (float)viewPortDimensions[1]) / (float)viewPortDimensions[3] - 0.5f) * 2.0f,
+		-1.0,
 		1.0f
 	);
-	glm::vec4 lRayEnd_NDC(((float)mouseX / (float)screenWidth - 0.5f) * 2.0f, ((float)mouseY / (float)screenHeight - 0.5f) * 2.0f, 1.0, 1.0f);
+	glm::vec4 lRayEnd_NDC(
+		(((float)mouseX-(float)viewPortDimensions[0]) / (float)viewPortDimensions[2] - 0.5f) * 2.0f,
+		(((float)mouseY - (float)viewPortDimensions[1]) / (float)viewPortDimensions[3] - 0.5f) * 2.0f, 1.0, 1.0f);
 
 	glm::mat4 M = glm::inverse(ProjectionMatrix * ViewMatrix * ModelMatrix);
 	glm::vec4 lRayStart_world = M * lRayStart_NDC; lRayStart_world/=lRayStart_world.w;

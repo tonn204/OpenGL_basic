@@ -113,6 +113,7 @@ int main()
 
 void calculateFinalVertices(int n, int &verts_number, std::vector<float>& vertices, glm::vec3 a, glm::vec3 b, glm::vec3 c)
 {
+	// ta funckja liczy wierzholki wszystkich trojkatow i wklada je od wlasciwego wektora czyli "int &verts_number" 
 	std::vector<glm::vec3> v;
 	v.push_back(a);
 	v.push_back(b);
@@ -123,6 +124,7 @@ void calculateFinalVertices(int n, int &verts_number, std::vector<float>& vertic
 	{
 		for (int j = 0; j < v.size(); j += 3)
 		{
+			// Dla kazdego trojkata liczy jego własne 3 mniejsze trojkaty i zapisuje je w wektorze temp
 			calculateVertices(temp, v[j], v[j + 1], v[j + 2]);
 		}
 		v.clear();
@@ -138,6 +140,8 @@ void calculateFinalVertices(int n, int &verts_number, std::vector<float>& vertic
 		final_value.push_back(v[i].z);
 	}
 
+	// wierzholki = 3^(n+1) bo np n = 1 ; v = 9   n = 2; v = 27
+
 	verts_number = pow(3, n + 1);
 	vertices = final_value;
 }
@@ -150,7 +154,7 @@ void calculateVertices(std::vector<glm::vec3>& vertices, glm::vec3 a, glm::vec3 
 	C = c;
 
 	glm::vec3 AB, AC, BC;
-
+	// Liczy punkty na środku powyzszych bokow
 	AC = glm::vec3((A.x + C.x) / 2.0f, (A.y + C.y) / 2.0f, 0.0f);
 	BC = glm::vec3((B.x + C.x) / 2.0f, (B.y + C.y) / 2.0f, 0.0f);
 	AB = glm::vec3((A.x + B.x) / 2.0f, (A.y + B.y) / 2.0f, 0.0f);
@@ -171,6 +175,8 @@ void calculateVertices(std::vector<glm::vec3>& vertices, glm::vec3 a, glm::vec3 
 	vertices.push_back(C);
 	vertices.push_back(AC);
 	vertices.push_back(BC);
+
+	// teraz wektor składa się z koordynatów 3 mniejszych trojkatów 
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
